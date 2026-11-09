@@ -359,20 +359,13 @@
               <p class="text-xs text-slate-500 mt-1">สามารถระบุเป็นวันในสัปดาห์ (จันทร์–ศุกร์) หรือช่วงเดือนที่สะดวก</p>
             </div>
 
-            <!-- สถานที่ -->
+            <!-- สถานที่ (พิมพ์เอง) -->
             <div>
               <label for="location" class="block text-sm font-medium text-slate-700 mb-1.5">
                 สถานที่ที่สะดวกจัดกิจกรรม <span class="text-rose-500">*</span>
               </label>
-              <select id="location" name="location" required class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm focus:border-softpink-500 focus:outline-none focus:ring-2 focus:ring-softpink-500/20">
-                <option value="" disabled selected>-- เลือกสถานที่ --</option>
-                <option value="ห้องเรียนประจำของนักเรียน (In-classroom)">ห้องเรียนประจำของนักเรียน (In-classroom)</option>
-                <option value="ห้องประชุม / หอประชุมโรงเรียน">ห้องประชุม / หอประชุมโรงเรียน</option>
-                <option value="ห้องปฏิบัติการคอมพิวเตอร์ / วิทยาศาสตร์">ห้องปฏิบัติการคอมพิวเตอร์ / วิทยาศาสตร์</option>
-                <option value="พื้นที่กลางแจ้ง / ลานกิจกรรม">พื้นที่กลางแจ้ง / ลานกิจกรรม</option>
-                <option value="ออนไลน์ผ่านระบบ Zoom หรือ Google Meet">ออนไลน์ผ่านระบบ Zoom หรือ Google Meet</option>
-                <option value="ตามที่โรงเรียนเห็นสมควรจัดให้">ตามที่โรงเรียนเห็นสมควรจัดให้</option>
-              </select>
+              <input type="text" id="location" name="location" required placeholder="เช่น ห้องเรียนประจำ, หอประชุม, ห้องคอมพิวเตอร์ หรือ ออนไลน์" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 shadow-sm focus:border-softpink-500 focus:outline-none focus:ring-2 focus:ring-softpink-500/20">
+              <p class="text-xs text-slate-500 mt-1">สามารถพิมพ์ระบุสถานที่ที่ท่านสะดวกได้ตามต้องการ</p>
             </div>
           </div>
         </div>
@@ -661,25 +654,38 @@ function doGet(e) {
 
 // 2. บันทึกคำตอบจากผู้ปกครองลงในแท็บ 'responses'
 function doPost(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("responses") || ss.getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([
-    new Date(),
-    data.classroom,
-    data.studentName,
-    data.parentName,
-    data.relationship,
-    data.occupation,
-    data.organization,
-    data.phone,
-    data.topicTitle,
-    data.categories.join(', '),
-    data.summary,
-    data.preferredDays,
-    data.location
-  ]);
-  return ContentService.createTextOutput("OK");
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("responses") || ss.getActiveSheet();
+    var data = {};
+    if (e && e.postData && e.postData.contents) {
+      try { data = JSON.parse(e.postData.contents); } catch(err) { data = e.parameter || {}; }
+    } else if (e && e.parameter) {
+      data = e.parameter;
+    }
+    var catStr = Array.isArray(data.categories) ? data.categories.join(', ') : (data.categories || '');
+    
+    // บันทึกแถวใหม่ (เว้นว่างช่องเลขที่เพื่อให้ตรงกับหัวตารางเดิม)
+    sheet.appendRow([
+      new Date(),
+      data.classroom || '',
+      data.studentName || '',
+      '', // เว้นช่องเลขที่เพื่อให้ตรงกับหัวตาราง
+      data.parentName || '',
+      data.relationship || '',
+      data.occupation || '',
+      data.organization || '',
+      data.phone || '',
+      data.topicTitle || '',
+      catStr,
+      data.summary || '',
+      data.preferredDays || '',
+      data.location || ''
+    ]);
+    return ContentService.createTextOutput("OK");
+  } catch(err) {
+    return ContentService.createTextOutput("Error: " + err.toString());
+  }
 }</pre>
         </div>
       </div>
@@ -1329,7 +1335,7 @@ function doPost(e) {
           fetch(sheetWebhookUrl, {
             method: 'POST',
             mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(newEntry)
           }).catch(err => console.log('Sheet sync note:', err));
         } catch (err) {
