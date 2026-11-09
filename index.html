@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบลงทะเบียนวิทยากรผู้ปกครองนำความรู้สู่ห้องเรียน (Parent Speaker Hub)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -150,7 +150,7 @@
                   <option value="ประถมศึกษาปีที่ 4/1">ประถมศึกษาปีที่ 4/1</option>
                   <option value="ประถมศึกษาปีที่ 4/2">ประถมศึกษาปีที่ 4/2</option>
                   <option value="Primary G 4A">Primary G 4A</option>
-                  <option value="Primary G 4B">Primary G 4B</option>                 
+                  <option value="Primary G 4B">Primary G 4B</option>                  
                   <option value="ประถมศึกษาปีที่ 5/1">ประถมศึกษาปีที่ 5/1</option>
                   <option value="ประถมศึกษาปีที่ 5/2">ประถมศึกษาปีที่ 5/2</option>
                   <option value="Primary G 5A">Primary G 5A</option>
@@ -186,7 +186,6 @@
               </label>
               <input type="text" id="student-name" name="studentName" required placeholder="เช่น ด.ญ. กานต์พิชชา ใจดี" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 shadow-sm focus:border-softpink-500 focus:outline-none focus:ring-2 focus:ring-softpink-500/20">
             </div>
-
 
           </div>
         </div>
@@ -551,6 +550,23 @@
     </div>
   </footer>
 
+  <!-- Success Modal (ลงทะเบียนสำเร็จ) -->
+  <div id="success-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-pink-100 animate-in fade-in zoom-in-95 duration-150">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-slate-900 mb-2">ลงทะเบียนสำเร็จ</h3>
+      <p class="text-xs text-slate-600 leading-relaxed mb-6">
+        โรงเรียนเซนต์ปอลคอนแวนต์ขอขอบพระคุณท่านผู้ปกครองที่ร่วมเป็นส่วนหนึ่งในการแบ่งปันความรู้และประสบการณ์ให้แก่นักเรียน ข้อมูลของท่านได้รับการบันทึกเรียบร้อยแล้ว
+      </p>
+      <button type="button" id="success-modal-close-btn" class="w-full py-3 bg-softpink-600 hover:bg-softpink-700 text-white font-medium text-sm rounded-xl shadow-md shadow-pink-200 transition">
+        ตกลง
+      </button>
+    </div>
+  </div>
 
   <!-- Google Sheet Integration Modal -->
   <div id="sheet-config-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
@@ -1235,6 +1251,14 @@ function doPost(e) {
       document.getElementById('detail-modal').classList.remove('hidden');
     }
 
+    // Success Modal Close
+    const successModalCloseBtn = document.getElementById('success-modal-close-btn');
+    if (successModalCloseBtn) {
+      successModalCloseBtn.addEventListener('click', () => {
+        document.getElementById('success-modal').classList.add('hidden');
+      });
+    }
+
     // Modal Close
     document.getElementById('modal-close-btn').addEventListener('click', () => {
       document.getElementById('detail-modal').classList.add('hidden');
@@ -1282,7 +1306,7 @@ function doPost(e) {
         id: 'spk-' + Date.now().toString(36),
         classroom: document.getElementById('classroom').value,
         studentName: document.getElementById('student-name').value.trim(),
-                parentName: document.getElementById('parent-name').value.trim(),
+        parentName: document.getElementById('parent-name').value.trim(),
         relationship: document.getElementById('relationship').value,
         occupation: document.getElementById('occupation').value.trim(),
         organization: document.getElementById('organization').value.trim(),
@@ -1315,13 +1339,12 @@ function doPost(e) {
 
       // Reset form
       document.getElementById('speaker-survey-form').reset();
-      showToast('ส่งข้อมูลแบบลงทะเบียนสำเร็จ! ขอบคุณที่ร่วมแบ่งปันความรู้');
+      showToast('ลงทะเบียนสำเร็จ');
 
-      // If admin is already logged in, switch to dashboard, otherwise stay on form
-      if (isAdminAuthenticated) {
-        setTimeout(() => {
-          switchView('dashboard');
-        }, 1200);
+      // Show Success Modal and stay on registration form (Do not go to dashboard)
+      const successModal = document.getElementById('success-modal');
+      if (successModal) {
+        successModal.classList.remove('hidden');
       }
     });
 
@@ -1374,7 +1397,7 @@ function doPost(e) {
         `"${item.createdAt || ''}"`
       ]);
 
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const csvContent = '﻿' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
