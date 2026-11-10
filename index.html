@@ -607,7 +607,7 @@
             Google Apps Script Web App URL
           </label>
           <div class="flex gap-2">
-            <input type="url" id="sheet-webhook-url" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-mono text-slate-900 shadow-sm focus:border-softpink-500 focus:outline-none focus:ring-2 focus:ring-softpink-500/20">
+            <input type="url" id="sheet-webhook-url" value="https://script.google.com/macros/s/AKfycbzu7DZbEbUEYxPUN74Ecuy-dXNPnr97oVsBmdVvBAhbVRXAu-Ucf-leWCAePD71Iif1/exec" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-mono text-slate-900 shadow-sm focus:border-softpink-500 focus:outline-none focus:ring-2 focus:ring-softpink-500/20">
             <button type="button" id="btn-sync-setting" class="px-3 py-2 bg-softpink-100 hover:bg-softpink-200 text-softpink-800 rounded-xl text-xs font-medium transition flex items-center gap-1 flex-shrink-0" title="ดึงรายชื่อห้องเรียนจากแท็บ setting">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               ซิงค์ค่าจาก setting
@@ -1430,9 +1430,10 @@ function doPost(e) {
     }
 
     // Initialize
-    // Google Sheet Integration Logic
+    // Google Sheet Integration Logic (Embedded for Sheet: 1LyfTD27umdUHTjOCjJcEGgKdDkYqI75-j-bcsrI1Q5E)
+    const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzu7DZbEbUEYxPUN74Ecuy-dXNPnr97oVsBmdVvBAhbVRXAu-Ucf-leWCAePD71Iif1/exec';
     const SHEET_URL_KEY = 'spc_parent_sheet_url_v1';
-    let sheetWebhookUrl = '';
+    let sheetWebhookUrl = DEFAULT_SHEET_URL;
 
     const btnSheetConfig = document.getElementById('btn-sheet-config');
     const sheetConfigModal = document.getElementById('sheet-config-modal');
@@ -1445,7 +1446,7 @@ function doPost(e) {
 
     function loadSheetConfig() {
       try {
-        sheetWebhookUrl = localStorage.getItem(SHEET_URL_KEY) || '';
+        sheetWebhookUrl = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
         sheetWebhookInput.value = sheetWebhookUrl;
         updateSheetStatusUI();
       } catch (e) {
